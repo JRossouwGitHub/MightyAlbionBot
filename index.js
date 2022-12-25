@@ -6,7 +6,7 @@ const client = new Discord.Client({ intents: [GatewayIntentBits.Guilds, GatewayI
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
 const commands = require("./commands.js").commands
-const validation = require("./validation.js").validate
+const validate = require("./validation.js").validate
 
 //Called after login
 client.on('ready', () => {
