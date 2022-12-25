@@ -24,7 +24,7 @@ client.on('messageCreate', (message) => {
     const args = message.content.split(" ").slice(1) //Array of all words after command
     switch(command){
         case "ping":
-            if(!validation.validate(message, null, null, 'Admin')) return
+            if(!validation.validate(message, null, 'odiousgspaz-test', 'Dev')) return
             message.channel.send("pong!")
             break;
         case "hello":
