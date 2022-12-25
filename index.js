@@ -6,7 +6,7 @@ const client = new Discord.Client({ intents: [GatewayIntentBits.Guilds, GatewayI
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
 const commands = require("./commands.js").commands
-const validation = require("./validation.js")
+const validation = require("./validation.js").validate
 
 //Called after login
 client.on('ready', () => {
@@ -24,16 +24,16 @@ client.on('messageCreate', (message) => {
     const args = message.content.split(" ").slice(1) //Array of all words after command
     switch(command){
         case "ping":
-            if(!validation.validate(message, null, 'odiousgspaz-test', 'Dev')) return
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev')) return
             message.channel.send("pong!")
             break;
         case "hello":
-            if(!validation.validate(message, null, null, null)) return
+            if(!validate(message, null, null, null)) return
             message.channel.send("Hello, " + message.author.username + "!")
             break;
         case 'help':
         case 'commands':
-            if(!validation.validate(message, null, null, null)) return
+            if(!validate(message, null, null, null)) return
             let output = commands.map((cmd) => cmd.join(" - ")).join("\n")
             message.channel.send("Here is a list of helpful commands:\n" + output)
             break;
