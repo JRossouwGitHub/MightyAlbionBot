@@ -1,0 +1,19 @@
+{
+  "name": "mightyalbionbot",
+  "version": "1.0.0",
+  "description": "To perform tasks related to the Mighty Albion Mob guild.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Jacques Rossouw | PalmTop",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "mongoose": "^6.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
