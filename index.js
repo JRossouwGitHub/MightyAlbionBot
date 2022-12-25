@@ -24,22 +24,16 @@ client.on('messageCreate', (message) => {
     const args = message.content.split(" ").slice(1) //Array of all words after command
     switch(command){
         case "ping":
-            if(!validation.validateServer(message.channel.guild.name, null, false)) return
-            if(!validation.validateChannel(message.channel.name, null, false)) return
-            if(!validation.validateAuthor(message.member, 'Developers')) return
+            if(!validation.validate(message, null, null, 'Admin')) return
             message.channel.send("pong!")
             break;
         case "hello":
-            if(!validation.validateServer(message.channel.guild.name, null, false)) return
-            if(!validation.validateChannel(message.channel.name, null, false)) return
-            if(!validation.validateAuthor(message.member, null, false)) return
+            if(!validation.validate(message, null, null, null)) return
             message.channel.send("Hello, " + message.author.username + "!")
             break;
         case 'help':
         case 'commands':
-            if(!validation.validateServer(message.channel.guild.name, null, false)) return
-            if(!validation.validateChannel(message.channel.name, null, false)) return
-            if(!validation.validateAuthor(message.member, null, false)) return
+            if(!validation.validate(message, null, null, null)) return
             let output = commands.map((cmd) => cmd.join(" - ")).join("\n")
             message.channel.send("Here is a list of helpful commands:\n" + output)
             break;
