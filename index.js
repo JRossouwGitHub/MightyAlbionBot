@@ -32,6 +32,7 @@ client.on('messageCreate', (message) => {
     //Process message
     const command = message.content.split(" ")[0].replace("!", "").toLowerCase() //Command after "!"
     const args = message.content.split(" ").slice(1) //Array of all words after command
+    const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname}).toString().replace(",", "")
     switch(command){
         case "ping":
             if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
@@ -39,7 +40,7 @@ client.on('messageCreate', (message) => {
             break;
         case "hello":
             if(!validate(message, null, null, null, null)) return
-            message.channel.send("Hello, " + message.author.username + "!")
+            message.channel.send("Hello, " + nickname + "!")
             break;
         case 'help':
         case 'commands':
@@ -85,8 +86,9 @@ client.on('messageCreate', (message) => {
                 content.push(newContent)
                 newContent.id = Math.random().toString().slice(2).substring(0,4)
                 newContent.size = args[0]
+                message.channel.send('@here ' + nickname + ' started a custom party!')
                 message.channel.send(messageEmbed(
-                    newContent.id + ' - ' + message.author.username + ' started a custom ' + newContent.size + ' player party!',
+                    newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
                     null,
                     'To join the party, select (react) to one of the roles below:',
                     [{name: '🛡️ - TANK', value: 'Mace, Oathkeepers\u200B'}, {name: '⚔️ - DPS', value: 'Carving Sword, Greataxe, Permafrost, Reg Bow\u200B'}, {name: '⚕️ - HEALER', value: 'Holy, Nature\u200B'}, {name: '\u200B', value: '\u200B'}],
@@ -164,18 +166,19 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 			return;
 		}
 	}
+    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(",", "")
     if(user.username == 'MightyAlbionBot') return
     //reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name) - example
     switch(true){
         case reactions.content.includes(reaction.emoji.name):
             const newContent = new ContentQueue()
             content.push(newContent)
-            content[content.indexOf(newContent)].create(reaction, user.username)
+            content[content.indexOf(newContent)].create(reaction, nickname)
             break;
         case reactions.roles.includes(reaction.emoji.name):
             const contentTitle = reaction.message.embeds.map(embed => embed.title)[0]
             const aQueue = content.filter(aContent => contentTitle.includes(aContent.id))[0]
-            content[content.indexOf(aQueue)].join(reaction, user.username, aQueue.type)
+            content[content.indexOf(aQueue)].join(reaction, nickname, aQueue.type)
             break;
     }
 });

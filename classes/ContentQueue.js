@@ -69,7 +69,7 @@ class ContentQueue{
                     return
                 }
                 this.inQueue.push([player, aRole])
-                reaction.message.channel.send('You joined as ' + aRole)
+                reaction.message.channel.send(player + ' joined as ' + aRole)
                 break;
         } 
     }
