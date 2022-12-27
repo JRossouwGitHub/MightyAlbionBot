@@ -1,7 +1,12 @@
 //Initialize Discord object
 const Discord = require('discord.js')
-const { Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions } = require('discord.js')
-const client = new Discord.Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
+const { Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions, Events, Partials } = require('discord.js')
+const client = new Discord.Client(
+    { 
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions],
+        partials: [Partials.Message, Partials.Channel, Partials.Reaction]
+    }
+)
 //Constants
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
@@ -46,13 +51,39 @@ client.on('messageCreate', (message) => {
                 'We are testing a card',
                 [{name: 'Field Title', value: 'Field Value'}, {name: '\u200B', value: '\u200B'}, {name: 'Field Title', value: 'Field Value', inline: true}, {name: 'Field Title', value: 'Field Value', inline: true}, {name: 'Field Title', value: 'Field Value', inline: true}],
                 null
-            ))
+            )).then((msg) => {
+                msg.react('1️⃣')
+                msg.react('2️⃣')
+                msg.react('3️⃣')
+                msg.react('4️⃣')
+                msg.react('5️⃣')
+                msg.react('6️⃣')
+                msg.react('7️⃣')
+                msg.react('8️⃣')
+                msg.react('9️⃣')
+            })
             break;
         default:
             message.channel.send("Sorry, I did not recognize that command. Please try again, or type `!help` or `!commands` for a list of commands.")
             break;
     }
 })
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+	// When a reaction is received, check if the structure is partial
+	if (reaction.partial) {
+		// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+		try {
+			await reaction.fetch();
+		} catch (error) {
+			console.error('Something went wrong when fetching the message:', error);
+			// Return as `reaction.message.author` may be undefined/null
+			return;
+		}
+	}
+    if(user.username == 'MightyAlbionBot') return
+    reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name)
+});
 
 //Login bot
 client.login(token)
