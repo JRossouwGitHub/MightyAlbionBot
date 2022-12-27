@@ -1,6 +1,6 @@
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js')
-const file = new AttachmentBuilder('./Icons/8ecf9b7e9c60f476d382a249bae813a7.webp');
-const MAMIcon = 'attachment://8ecf9b7e9c60f476d382a249bae813a7.webp'
+const file = new AttachmentBuilder('./Icons/MAMIcon.png');
+const MAMIcon = 'attachment://MAMIcon.png'
 
 const messageEmbed = (
         title, //Card title
