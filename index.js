@@ -10,9 +10,9 @@ const client = new Discord.Client(
 //Constants
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
-const commands = require("./commands.js").commands
-const validate = require("./validation.js").validate
-const messageEmbed = require('./messageEmbed.js').messageEmbed
+const commands = require("./utilities/commands.js").commands
+const validate = require("./utilities/validation.js").validate
+const messageEmbed = require('./utilities/messageEmbed.js').messageEmbed
 
 //Called after login
 client.on('ready', () => {
@@ -30,21 +30,21 @@ client.on('messageCreate', (message) => {
     const args = message.content.split(" ").slice(1) //Array of all words after command
     switch(command){
         case "ping":
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev')) return
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
             message.channel.send("pong!")
             break;
         case "hello":
-            if(!validate(message, null, null, null)) return
+            if(!validate(message, null, null, null, null)) return
             message.channel.send("Hello, " + message.author.username + "!")
             break;
         case 'help':
         case 'commands':
-            if(!validate(message, null, null, null)) return
+            if(!validate(message, null, null, null, null)) return
             let output = commands.map((cmd) => cmd.join(" - ")).join("\n")
             message.channel.send("Here is a list of helpful commands:\n" + output)
             break;
         case 'embed':
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev')) return
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
             message.channel.send(messageEmbed(
                 'This is a test card',
                 null,

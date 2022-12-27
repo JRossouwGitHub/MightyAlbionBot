@@ -19,12 +19,21 @@ const validateAuthor = (source, target) => {
     return source.member.roles.cache.find(role => role.name.toLowerCase() === target.toLowerCase())
 }
 
-const validate = (message, server, channel, author) => {
+
+//To validate the author is the correct user to execute the command
+const validateUsername = (source, target) => {
+    if(target == null) return true
+    target.map((i) => i.toLowerCase()) //Set each Username in the list to lowercase
+    return target.includes(source.author.username)
+}
+
+const validate = (message, server, channel, author, username) => {
     const _server = validateServer(message, server)
     const _channel = validateChannel(message, channel)
     const _author = validateAuthor(message, author)
+    const _user = validateUsername(message, username)
 
-    return (_server && _channel && _author)
+    return (_server && _channel && _author && _user)
 }
 
 module.exports = {
