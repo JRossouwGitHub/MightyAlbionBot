@@ -7,6 +7,7 @@ const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
 const commands = require("./commands.js").commands
 const validate = require("./validation.js").validate
+const messageEmbed = require('./messageEmbed.js').messageEmbed
 
 //Called after login
 client.on('ready', () => {
@@ -36,6 +37,16 @@ client.on('messageCreate', (message) => {
             if(!validate(message, null, null, null)) return
             let output = commands.map((cmd) => cmd.join(" - ")).join("\n")
             message.channel.send("Here is a list of helpful commands:\n" + output)
+            break;
+        case 'embed':
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev')) return
+            message.channel.send(messageEmbed(
+                'This is a test card',
+                null,
+                'We are testing a card',
+                [{name: 'Field Title', value: 'Field Value'}, {name: '\u200B', value: '\u200B'}, {name: 'Field Title', value: 'Field Value', inline: true}, {name: 'Field Title', value: 'Field Value', inline: true}, {name: 'Field Title', value: 'Field Value', inline: true}],
+                null
+            ))
             break;
         default:
             message.channel.send("Sorry, I did not recognize that command. Please try again, or type `!help` or `!commands` for a list of commands.")
