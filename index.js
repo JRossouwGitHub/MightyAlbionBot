@@ -63,6 +63,19 @@ client.on('messageCreate', (message) => {
                 msg.react('9️⃣')
             })
             break;
+        case 'start':
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            message.channel.send(messageEmbed(
+                'Content Party',
+                null,
+                'To start a content party, select (react) to one of the content option below:',
+                [{name: '1 - Fame Farming', value: '10 party size\u200B'}, {name: '2 - Roads', value: '7 party size\u200B'}],
+                null
+            )).then((msg) => {
+                msg.react('1️⃣')
+                msg.react('2️⃣')
+            })
+            break;
         default:
             message.channel.send("Sorry, I did not recognize that command. Please try again, or type `!help` or `!commands` for a list of commands.")
             break;
@@ -82,7 +95,15 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 		}
 	}
     if(user.username == 'MightyAlbionBot') return
-    reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name)
+    //reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name) - example
+    switch(reaction.emoji.name){
+        case '1️⃣':
+            reaction.message.channel.send('@here ' + user.username + ' started a Fame Farming party!')
+            break;
+        case '2️⃣':
+            reaction.message.channel.send('@here ' + user.username + ' started a Roads party!')
+            break;
+    }
 });
 
 //Login bot
