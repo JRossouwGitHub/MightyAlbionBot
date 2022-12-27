@@ -1,13 +1,12 @@
 const messageEmbed = require('../utilities/messageEmbed.js').messageEmbed
 
 class ContentQueue{
-    constructor(type = 1, size = 0, inQueue = [], joinable = true, filled = false){
+    constructor(type = 1, size = 0, inQueue = [], joinable = true){
         this.id = Math.random().toString().slice(2).substring(0,4)
         this.type = type
         this.size = size
         this.inQueue = inQueue
         this.joinable = joinable
-        this.filled = filled
     }
 
     create(reaction, player){
@@ -41,6 +40,9 @@ class ContentQueue{
     }
 
     join(reaction, player, queue, content){
+        if(!this.joinable){
+            reaction.message.channel.send('Sorry, you are unable to join this queue because it is either full or ended.')
+        }
         const aRole = reaction.emoji.name
         if(this.inQueue.filter((aPlayer) => aPlayer[0] == player).length > 0){
             reaction.message.channel.send('You are already in party as '+ this.inQueue.filter((aPlayer) => aPlayer[0] == player)[0][1] +'.')
@@ -67,8 +69,8 @@ class ContentQueue{
                 this.inQueue.push([player, aRole])
                 reaction.message.channel.send(player + ' joined as ' + aRole)
                 if(this.inQueue.length == this.size){
-                    this.ready(reaction, content)
-                    return
+                    this.joinable = false
+                    return this.ready(reaction, content)
                 }
                 break;
         } 
@@ -84,9 +86,11 @@ class ContentQueue{
 
         content.map((aContent) => {
             if(aContent.inQueue.length == 0){
-                content = content.filter(bContent => bContent.inQueue.length != 0)
+                content = content.filter(bContent => bContent.inQueue.length > 0)
             }
         })
+
+        return content
     }
 }
 

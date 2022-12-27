@@ -22,17 +22,6 @@ const messageEmbed = (
     return {embeds: [embed], files: [file]}
 }
 
-const getContentTypeFromEmbed = (value) => {
-    let type = 0
-    switch(true){
-        case value.includes("Fame Farming"):
-            type = 1
-            break;
-    }
-    return type
-}
-
 module.exports = {
-    messageEmbed,
-    getContentTypeFromEmbed
+    messageEmbed
 }

@@ -13,10 +13,10 @@ const PREFIX = '!'
 const commands = require("./utilities/commands.js").commands
 const validate = require("./utilities/validation.js").validate
 const messageEmbed = require('./utilities/messageEmbed.js').messageEmbed
-const getContentTypeFromEmbed = require('./utilities/messageEmbed.js').getContentTypeFromEmbed
+const builds = require('./utilities/builds.js').builds
 const reactions = require('./utilities/reactions.js')
 const ContentQueue = require('./classes/ContentQueue.js').ContentQueue
-const content = []
+let content = []
 
 //Called after login
 client.on('ready', () => {
@@ -91,18 +91,23 @@ client.on('messageCreate', (message) => {
                     newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
                     null,
                     'To join the party, select (react) to one of the roles below:',
-                    [{name: '🛡️ - TANK', value: 'Mace, Oathkeepers\u200B'}, {name: '⚔️ - DPS', value: 'Carving Sword, Greataxe, Permafrost, Reg Bow\u200B'}, {name: '⚕️ - HEALER', value: 'Holy, Nature\u200B'}, {name: '\u200B', value: '\u200B'}],
+                    [{name: '🛡️ - TANK', value: builds.tank + '\u200B'}, {name: '⚔️ - DPS', value: builds.dps + '\u200B'}, {name: '⚕️ - HEALER', value: builds.healer + '\u200B'}, {name: '✳️ - SUPPORT', value: builds.support + '\u200B'}, {name: '\u200B', value: '\u200B'}],
                     null
                 )).then((msg) => {
                     msg.react('🛡️')
                     msg.react('⚔️')
                     msg.react('⚕️')
+                    msg.react('✳️')
                 })
             }
             break;
         case 'check':
             const contentId = args[0]
             const aQueue = content.filter((aContent) => aContent.id == contentId)[0]
+            if(!aQueue) {
+                message.channel.send('This queue has ended.')
+                return
+            }
             let qTanks = []
             let qDPS = []
             let qHealers = []
@@ -178,7 +183,11 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         case reactions.roles.includes(reaction.emoji.name):
             const contentTitle = reaction.message.embeds.map(embed => embed.title)[0]
             const aQueue = content.filter(aContent => contentTitle.includes(aContent.id))[0]
-            content[content.indexOf(aQueue)].join(reaction, nickname, aQueue.type, content)
+            if(!aQueue) {
+                reaction.message.channel.send('This queue is no longer available to join.')
+                return
+            }
+            content = content[content.indexOf(aQueue)].join(reaction, nickname, aQueue.type, content)
             break;
     }
 });

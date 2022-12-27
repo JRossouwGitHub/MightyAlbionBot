@@ -13,7 +13,8 @@ const content = [
 const roles = [
     '🛡️',
     '⚔️',
-    '⚕️'
+    '⚕️',
+    '✳️'
 ]
 
 module.exports = {
