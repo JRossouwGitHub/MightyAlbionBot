@@ -1,17 +1,13 @@
 const messageEmbed = require('../utilities/messageEmbed.js').messageEmbed
 
 class ContentQueue{
-    constructor(type = 1, size = 0, inQueue = [], joinable = true, ready = false){
+    constructor(type = 1, size = 0, inQueue = [], joinable = true, filled = false){
         this.id = Math.random().toString().slice(2).substring(0,4)
         this.type = type
         this.size = size
         this.inQueue = inQueue
-        this.joinable = {
-            tank: true,
-            dps: true,
-            healer: true
-        }
-        this.ready = ready
+        this.joinable = joinable
+        this.filled = filled
     }
 
     create(reaction, player){
@@ -44,7 +40,7 @@ class ContentQueue{
         }
     }
 
-    join(reaction, player, queue){
+    join(reaction, player, queue, content){
         const aRole = reaction.emoji.name
         if(this.inQueue.filter((aPlayer) => aPlayer[0] == player).length > 0){
             reaction.message.channel.send('You are already in party as '+ this.inQueue.filter((aPlayer) => aPlayer[0] == player)[0][1] +'.')
@@ -70,8 +66,27 @@ class ContentQueue{
                 }
                 this.inQueue.push([player, aRole])
                 reaction.message.channel.send(player + ' joined as ' + aRole)
+                if(this.inQueue.length == this.size){
+                    this.ready(reaction, content)
+                    return
+                }
                 break;
         } 
+    }
+
+    ready(reaction, content){
+        reaction.message.channel.send('@here ' + this.id + ' - Group is ready!')
+        content.map((aContent) => {
+            this.inQueue.map((thisQueue) => {
+                aContent.inQueue = aContent.inQueue.filter((aQueue) => aQueue[0] != thisQueue[0])
+            })
+        })
+
+        content.map((aContent) => {
+            if(aContent.inQueue.length == 0){
+                content = content.filter(bContent => bContent.inQueue.length != 0)
+            }
+        })
     }
 }
 

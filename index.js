@@ -69,7 +69,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'start':
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            //if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
             if(args == 0){
                 message.channel.send(messageEmbed(
                     'Content Party',
@@ -178,7 +178,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         case reactions.roles.includes(reaction.emoji.name):
             const contentTitle = reaction.message.embeds.map(embed => embed.title)[0]
             const aQueue = content.filter(aContent => contentTitle.includes(aContent.id))[0]
-            content[content.indexOf(aQueue)].join(reaction, nickname, aQueue.type)
+            content[content.indexOf(aQueue)].join(reaction, nickname, aQueue.type, content)
             break;
     }
 });
