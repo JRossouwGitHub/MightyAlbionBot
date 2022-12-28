@@ -32,7 +32,7 @@ client.on('messageCreate', (message) => {
     //Process message
     const command = message.content.split(" ")[0].replace("!", "").toLowerCase() //Command after "!"
     const args = message.content.split(" ").slice(1) //Array of all words after command
-    const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname}).toString().replace(",", "")
+    const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname}).toString().replace(/,/g, "")
     switch(command){
         case "ping":
             if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
@@ -196,7 +196,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 			return;
 		}
 	}
-    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(",", "").replace(",", "")
+    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(/,/g, "")
     if(user.username == 'MightyAlbionBot') return
     //reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name) - example
     switch(true){
