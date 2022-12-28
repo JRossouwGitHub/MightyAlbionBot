@@ -86,7 +86,6 @@ client.on('messageCreate', (message) => {
                 newContent.id = Math.random().toString().slice(2).substring(0,4)
                 newContent.size = args[0]
                 content.push(newContent)
-                console.log(content)
                 message.channel.send('@here ' + nickname + ' started a custom party!')
                 message.channel.send(messageEmbed(
                     newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
@@ -104,7 +103,6 @@ client.on('messageCreate', (message) => {
             break;
         case 'check':
             const contentId = args[0]
-            console.log(content)
             const aQueue = content.filter((aContent) => aContent.id == contentId)[0]
             if(!aQueue) {
                 message.channel.send('This queue has ended.')
@@ -198,7 +196,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 			return;
 		}
 	}
-    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(",", "")
+    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(",", "").replace(",", "")
     if(user.username == 'MightyAlbionBot') return
     //reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name) - example
     switch(true){
