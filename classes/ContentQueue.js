@@ -66,11 +66,17 @@ class ContentQueue{
                     reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
                     return
                 }
+                if(aRole == '✳️' && this.inQueue.filter(aPlayer => aPlayer[1] == '✳️') >= 1){
+                    reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
+                    return
+                }
                 this.inQueue.push([player, aRole])
                 reaction.message.channel.send(player + ' joined as ' + aRole)
                 if(this.inQueue.length == this.size){
                     this.joinable = false
                     return this.ready(reaction, content)
+                } else {
+                    return content
                 }
                 break;
         } 

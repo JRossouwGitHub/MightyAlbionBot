@@ -86,6 +86,7 @@ client.on('messageCreate', (message) => {
                 newContent.id = Math.random().toString().slice(2).substring(0,4)
                 newContent.size = args[0]
                 content.push(newContent)
+                console.log(content)
                 message.channel.send('@here ' + nickname + ' started a custom party!')
                 message.channel.send(messageEmbed(
                     newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
@@ -103,6 +104,7 @@ client.on('messageCreate', (message) => {
             break;
         case 'check':
             const contentId = args[0]
+            console.log(content)
             const aQueue = content.filter((aContent) => aContent.id == contentId)[0]
             if(!aQueue) {
                 message.channel.send('This queue has ended.')
@@ -111,6 +113,7 @@ client.on('messageCreate', (message) => {
             let qTanks = []
             let qDPS = []
             let qHealers = []
+            let qSupports = []
             aQueue.inQueue.map((aPlayer) => {
                 switch(aPlayer[1]){
                     case '🛡️':
@@ -122,6 +125,9 @@ client.on('messageCreate', (message) => {
                     case '⚕️':
                         qHealers.push(aPlayer[0])
                         break;
+                    case '✳️':
+                        qSupports.push(aPlayer[0])
+                        break;
                 }
             })
             const tanksTitle = '🛡️ - TANKS (' + qTanks.length + ')'
@@ -130,6 +136,8 @@ client.on('messageCreate', (message) => {
             const dpsValue = qDPS.length > 0 ? qDPS.join(', ') : 'None'
             const healersTitle = '⚕️ - HEALERS (' + qHealers.length + ')'
             const healersValue = qHealers.length > 0 ? qHealers.join(', ') : 'None'
+            const supportsTitle = '✳️ - SUPPORTS (' + qSupports.length + ')'
+            const supportsValue = qSupports.length > 0 ? qSupports.join(', ') : 'None'
             message.channel.send(messageEmbed(
                 'Players in group (' + aQueue.inQueue.length + '/' + aQueue.size + ')',
                 null,
@@ -147,6 +155,10 @@ client.on('messageCreate', (message) => {
                         name: healersTitle, 
                         value: healersValue
                     }, 
+                    {
+                        name: supportsTitle, 
+                        value: supportsValue
+                    },
                     {name: '\u200B', value: '\u200B'}
                 ],
                 null
