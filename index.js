@@ -69,7 +69,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'start':
-            //if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
             if(args == 0){
                 message.channel.send(messageEmbed(
                     'Content Party',
@@ -83,9 +83,9 @@ client.on('messageCreate', (message) => {
                 })
             } else {
                 const newContent = new ContentQueue()
-                content.push(newContent)
                 newContent.id = Math.random().toString().slice(2).substring(0,4)
                 newContent.size = args[0]
+                content.push(newContent)
                 message.channel.send('@here ' + nickname + ' started a custom party!')
                 message.channel.send(messageEmbed(
                     newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
@@ -111,7 +111,6 @@ client.on('messageCreate', (message) => {
             let qTanks = []
             let qDPS = []
             let qHealers = []
-            //console.log(aQueue.inQueue.map((aPlayer) => aPlayer[1]))
             aQueue.inQueue.map((aPlayer) => {
                 switch(aPlayer[1]){
                     case '🛡️':
@@ -152,6 +151,22 @@ client.on('messageCreate', (message) => {
                 ],
                 null
             ))
+            break;
+        case 'leave':
+            if(args == 0) {
+                message.channel.send('Please specify the queue ID, i.e. `!leave 1234`')
+                return
+            }
+            if(content.filter((aContent) => aContent.id == args[0]).length == 0){
+                message.channel.send('The queue you are trying to leave no longer exists.')
+                return
+            }
+            content.map((aContent) => {
+                if(aContent.id == args[0]){
+                    aContent.inQueue = aContent.inQueue.filter((bQueue) => bQueue[0] != nickname)
+                    message.channel.send(nickname + ' has left the queue ' + aContent.id)
+                }
+            })
             break;
         default:
             message.channel.send("Sorry, I did not recognize that command. Please try again, or type `!help` or `!commands` for a list of commands.")
