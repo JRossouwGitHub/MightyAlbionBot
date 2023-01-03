@@ -8,6 +8,13 @@ const client = new Discord.Client(
     }
 )
 //Constants
+const mongoose = require('mongoose')
+mongoose.set('strictQuery', true)
+const config = require('./config.json')
+const uri = config.DB_CONNECTION_URI.replace("<username>", config.DB_USERNAME).replace("<password>", config.DB_PASSWORD)
+mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.Promise = global.Promise;
+const CartelMember = require('./models/CartelMember.js')
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
 const commands = require("./utilities/commands.js").commands
@@ -17,6 +24,8 @@ const builds = require('./utilities/builds.js').builds
 const reactions = require('./utilities/reactions.js')
 const ContentQueue = require('./classes/ContentQueue.js').ContentQueue
 let content = []
+const cartelFee = 200000
+const getWeeksDiff = require('./utilities/date').getWeeksDiff
 
 //Called after login
 client.on('ready', () => {
@@ -32,7 +41,7 @@ client.on('messageCreate', (message) => {
     //Process message
     const command = message.content.split(" ")[0].replace("!", "").toLowerCase() //Command after "!"
     const args = message.content.split(" ").slice(1) //Array of all words after command
-    const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname}).toString().replace(/,/g, "")
+    const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname}).toString().replace(/,/g, "") ?? message.author.username
     switch(command){
         case "ping":
             if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
@@ -178,6 +187,186 @@ client.on('messageCreate', (message) => {
                 }
             })
             break;
+        case 'register':
+            if(!validate(message, "The Mob Cartel", 'register', null, null)) return
+            const member = nickname
+            const total_owing = cartelFee
+            const total_paid = 0
+            CartelMember.findOne({member: member})
+            .then((aMember) => {
+                if(aMember){
+                    message.channel.send(aMember.member + ', you are already in bed with the Mighty Albion Cartel!')
+                    return
+                }
+                CartelMember.findOneAndUpdate(
+                    {
+                        member: member
+                    },
+                    {
+                        total_owing: total_owing,
+                        total_paid: total_paid
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(member => {
+                    console.log("DB - Member was inserted or updated")
+                    message.channel.send(nickname + ' is now in bed with the Mighty Albion Cartel!')
+                })
+                .catch(err => {
+                    console.log("DB - Member was not inserted or updated")
+                    console.log(err)
+                    message.channel.send('Sorry, there was an issue registering you with the Maighty Albion Cartel.')
+                })
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+            break;
+        case 'pay':
+            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            CartelMember.findOne({member: nickname})
+            .then((aMember) => {
+                const weeksDiff = getWeeksDiff(aMember)
+                const totalOwing = aMember.total_owing * weeksDiff
+                const totalPaid = aMember.total_paid + (args[0] ? args[0] : cartelFee)
+                CartelMember.findOneAndUpdate(
+                    {
+                        member: aMember.member
+                    },
+                    {
+                        total_owing: totalOwing,
+                        total_paid: totalPaid
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(member => {
+                    console.log("DB - Member was inserted or updated")
+                    message.channel.send(nickname + ' has paid the Mighty Albion Cartel fee!')
+                })
+                .catch(err => {
+                    console.log("DB - Member was not inserted or updated")
+                    console.log(err)
+                    message.channel.send('Sorry, there was an issue paying your fee with the Maighty Albion Cartel.')
+                })
+            })
+            .catch((err) => {
+                message.channel.send(nickname + ', you need to `!register` before being able to pay.')
+                console.log(err)
+            })
+            break;
+        case 'owing':
+            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            CartelMember.findOne({member: nickname})
+            .then((aMember) => {
+                const weeksDiff = getWeeksDiff(aMember)
+                const totalOwing = aMember.total_owing * weeksDiff
+                const totalPaid = aMember.total_paid
+                const total_owing = (totalOwing - totalPaid).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                message.channel.send(nickname + ', you owe the Mighty Albion Cartel: $' + total_owing)
+                CartelMember.findOneAndUpdate(
+                    {
+                        member: aMember.member
+                    },
+                    {
+                        total_owing: totalOwing,
+                        total_paid: totalPaid
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(member => {
+                    console.log("DB - Member was inserted or updated")
+                })
+                .catch(err => {
+                    console.log("DB - Member was not inserted or updated")
+                    console.log(err)
+                })
+            })
+            .catch((err) => {
+                message.channel.send(nickname + ', you need to `!register` before being you owe anything.')
+                console.log(err)
+            })
+            break;
+        case 'members':
+            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            CartelMember.find({})
+            .then((members) => {
+                const membersList = []
+                let memberNames = ""
+                let memberJoined = ""
+                let memberOwings = ""
+                members.map(aMember => {
+                    const weeksDiff = getWeeksDiff(aMember)
+                    const totalOwing = aMember.total_owing * weeksDiff
+                    const totalPaid = aMember.total_paid
+                    const newD = new Date(aMember.date_joined)
+                    const dateJoined =  (newD.getDate() < 10 ? "0" + newD.getDate() : newD.getDate()) + "/" + (newD.getMonth() + 1 < 10 ? "0" + (newD.getMonth() + 1) : newD.getMonth() + 1) + "/" + newD.getFullYear()
+                    const total_owing = (totalOwing - totalPaid).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    memberNames += aMember.member+'\n'
+                    memberJoined += dateJoined+'\n'
+                    memberOwings += "$"+total_owing+'\n'
+
+                    
+                    CartelMember.findOneAndUpdate(
+                        {
+                            member: aMember.member
+                        },
+                        {
+                            total_owing: totalOwing,
+                            total_paid: totalPaid
+                        },
+                        {
+                            new: true,
+                            upsert: true
+                        }
+                    )
+                    .then(member => {
+                        console.log("DB - Member was inserted or updated")
+                    })
+                    .catch(err => {
+                        console.log("DB - Member was not inserted or updated")
+                        console.log(err)
+                    })
+                })
+                membersList.push({
+                    name: "Name",
+                    value: memberNames,
+                    inline: true
+                })
+                membersList.push({
+                    name: "Joined",
+                    value: memberJoined,
+                    inline: true
+                })
+                membersList.push({
+                    name: "Owing",
+                    value: memberOwings,
+                    inline: true
+                })
+                membersList.push({
+                    name: '\u200B',
+                    value: '\u200B'
+                })
+                message.channel.send(messageEmbed(
+                    'Mighty Albion Cartel Members',
+                    null,
+                    'Here is a list of all members and their details:',
+                    membersList,
+                    null
+                ))
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+            break;
         default:
             message.channel.send("Sorry, I did not recognize that command. Please try again, or type `!help` or `!commands` for a list of commands.")
             break;
@@ -196,7 +385,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 			return;
 		}
 	}
-    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(/,/g, "")
+    const nickname = reaction.message.guild.members.cache.map(member => { if(member.user.username == user.username) return member.nickname}).toString().replace(/,/g, "") ?? reaction.message.author.username
     if(user.username == 'MightyAlbionBot') return
     //reaction.message.channel.send(user.username + ' reacted with: ' + reaction.emoji.name) - example
     switch(true){
