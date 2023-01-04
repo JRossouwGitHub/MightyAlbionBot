@@ -15,6 +15,7 @@ const uri = config.DB_CONNECTION_URI.replace("<username>", config.DB_USERNAME).r
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 mongoose.Promise = global.Promise;
 const CartelMember = require('./models/CartelMember.js')
+const LootSplit = require('./models/LootSplit.js')
 const token = require("./config.json").DISCORD_TOKEN
 const PREFIX = '!'
 const commands = require("./utilities/commands.js").commands
@@ -110,7 +111,7 @@ client.on('messageCreate', (message) => {
                 })
             }
             break;
-        case 'check':
+        case 'check-group':
             const contentId = args[0]
             const aQueue = content.filter((aContent) => aContent.id == contentId)[0]
             if(!aQueue) {
@@ -364,6 +365,47 @@ client.on('messageCreate', (message) => {
                 ))
             })
             .catch((err) => {
+                console.log(err)
+            })
+            break;
+        case 'split':
+            const splitTab = args[0]
+            const splitAmount = args[1]
+            if(!splitTab || !splitAmount){
+                message.channel.send("Please specify the Split Tab and Amount, i.e. `!split 1/2/3 2000000`")
+                return
+            }
+            const d = new Date()
+            d.setDate(d.getDate() + 1)
+            const splitEnd =  (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + "/" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "/" + d.getFullYear() + " 08:00pm NZST"
+            d.setDate(d.getDate() - 1)
+            const newLootSplit = {
+                splitId: Math.random().toString().slice(2).substring(0,4),
+                tab: splitTab,
+                amount: splitAmount,
+                ends: splitEnd,
+                date: d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "-" + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate())
+            }
+            LootSplit.create(newLootSplit)
+            .then(lootsplit => {
+                console.log("DB - LootSplit was inserted or updated")
+                message.channel.send(messageEmbed(
+                    nickname + ' registered split ' + newLootSplit.splitId,
+                    null,
+                    'Here are the details of the split:',
+                    [
+                        {name: 'Split Tab', value: lootsplit.tab.toString()}, 
+                        {name: 'Split Amount', value: "$" + lootsplit.amount.toString()}, 
+                        {name: 'Players', value: lootsplit.group.length > 0 ? lootsplit.group.join("\n") : "N/A"}, 
+                        {name: 'Bid', value: (lootsplit.bid.player == "" ? "N/A" : lootsplit.bid.player) + ' - $' + lootsplit.bid.amount.toString()},
+                        {name: 'Ends', value: lootsplit.ends.toString()},
+                        {name: '\u200B', value: '\u200B'}
+                    ],
+                    null
+                ))
+            })
+            .catch(err => {
+                console.log("DB - LootSplit was not inserted or updated")
                 console.log(err)
             })
             break;
