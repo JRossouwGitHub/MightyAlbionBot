@@ -78,7 +78,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'start':
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            if(!validate(message, null, null, null, null)) return
             if(args == 0){
                 message.channel.send(messageEmbed(
                     'Content Party',
@@ -100,7 +100,7 @@ client.on('messageCreate', (message) => {
                     newContent.id + ' - ' + nickname + ' started a custom ' + newContent.size + ' player party!',
                     null,
                     'To join the party, select (react) to one of the roles below:',
-                    [{name: '🛡️ - TANK', value: builds.tank + '\u200B'}, {name: '⚔️ - DPS', value: builds.dps + '\u200B'}, {name: '⚕️ - HEALER', value: builds.healer + '\u200B'}, {name: '✳️ - SUPPORT', value: builds.support + '\u200B'}, {name: '\u200B', value: '\u200B'}],
+                    [{name: '🛡️ - TANK', value: builds.standard.tank + '\u200B'}, {name: '⚔️ - DPS', value: builds.standard.dps + '\u200B'}, {name: '⚕️ - HEALER', value: builds.standard.healer + '\u200B'}, {name: '✳️ - SUPPORT', value: builds.standard.support + '\u200B'}, {name: '\u200B', value: '\u200B'}],
                     null
                 )).then((msg) => {
                     msg.react('🛡️')
