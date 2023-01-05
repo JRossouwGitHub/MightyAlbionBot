@@ -20,6 +20,10 @@ const LootSplitSchema = new Schema({
         type: Array,
         default: []
     },
+    owe: {
+        type: Number,
+        default: 0
+    },
     bid: {
         type: Object,
         default: {

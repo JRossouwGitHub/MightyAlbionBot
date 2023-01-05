@@ -417,7 +417,7 @@ client.on('messageCreate', (message) => {
         case 'check-split':
             const splitId = args[0].toString()
             if(!splitId){
-                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                message.channel.send("Please specify the Split ID, i.e. `!check-split 0123`")
                 return
             }
             LootSplit.findOne({splitId: splitId})
@@ -451,11 +451,11 @@ client.on('messageCreate', (message) => {
             const splitIdAdd = args[0].toString()
             const playersToAdd = args.filter(cmd => cmd != splitIdAdd)
             if(!splitIdAdd){
-                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                message.channel.send("Please specify the Split ID, i.e. `!split-add 0123`")
                 return
             }
             if(playersToAdd.length < 1) {
-                message.channel.send("Please specify the players to add, i.e. `!split 0123 Player1 Player2 etc...`")
+                message.channel.send("Please specify the players to add, i.e. `!split-add 0123 Player1 Player2 etc...`")
                 return
             }
             LootSplit.findOne({splitId: splitIdAdd})
@@ -495,11 +495,11 @@ client.on('messageCreate', (message) => {
             const splitIdRemove = args[0].toString()
             const playersToRemove = args.filter(cmd => cmd != splitIdRemove)
             if(!splitIdRemove){
-                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                message.channel.send("Please specify the Split ID, i.e. `!split-remove 0123`")
                 return
             }
             if(playersToRemove.length < 1) {
-                message.channel.send("Please specify the players to remove, i.e. `!split 0123 Player1 Player2 etc...`")
+                message.channel.send("Please specify the players to remove, i.e. `!split-remove 0123 Player1 Player2 etc...`")
                 return
             }
             LootSplit.findOne({splitId: splitIdRemove})
@@ -528,6 +528,156 @@ client.on('messageCreate', (message) => {
                     message.channel.send("Sorry, something went wrong.")
                     console.log(err)
                 })
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
+                console.log(err)
+            })
+            break;
+        case 'bid':
+            const splitIdBid = args[0]
+            const bidAmount = parseInt(args[1])
+            if(!splitIdBid){
+                message.channel.send("Please specify the Split ID, i.e. `!bid 0123`")
+                return
+            }
+            if(!bidAmount){
+                message.channel.send("Please specify the amount you want to bid, i.e. `!bid 0123 100000`")
+                return
+            }
+            LootSplit.findOne({splitId: splitIdBid})
+            .then(lootsplit => {
+                if(!lootsplit){
+                    message.channel.send("Sorry, a Loot Split with ID `" + splitIdBid + "` was not found. Please check your ID and try again.")
+                    return
+                }
+                //This needs more thought
+                // if(!lootsplit.group.includes(nickname)){
+                //     message.channel.send("You cannot bid on this split because you are not part of the split group.")
+                //     return
+                // }
+                const today = new Date()
+                const splitDatePart = lootsplit.ends.date.split("/")
+                const splitDate = new Date(splitDatePart[2] + "-" + splitDatePart[1] + "-" + splitDatePart[0] + "T20:00:00.000Z")
+                if(today > splitDate){
+                    message.channel.send("You cannot bid on this split because it has ended on " + lootsplit.ends.date +".")
+                    return
+                }
+                if(((bidAmount / lootsplit.amount) * 100) < 50){
+                    message.channel.send("Please make a bid that is at least half the price of the total or higher (bid "+ (lootsplit.amount / 2 ? lootsplit.amount / 2 : 100000) +" or more).")
+                    return
+                }
+                if(bidAmount < (lootsplit.bid.amount + 100000)){
+                    message.channel.send("The minumum bid is 100000 more than the last (bid "+(lootsplit.bid.amount + 100000)+" or more).")
+                    return
+                }
+                if(bidAmount > lootsplit.amount){
+                    message.channel.send("Your bid of " + bidAmount + " is higher than the total split value of " + lootsplit.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
+                    return
+                }
+                LootSplit.findOneAndUpdate(
+                    {
+                        splitId: splitIdBid
+                    },
+                    {
+                        bid: {
+                            player: nickname,
+                            amount: bidAmount
+                        },
+                        owe: bidAmount / lootsplit.group.length
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(res => {
+                    message.channel.send(nickname + " bid $" + bidAmount)
+                })
+                .catch(err => {
+                    message.channel.send("Sorry, something went wrong.")
+                    console.log(err)
+                })
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
+                console.log(err)
+            })
+            break;
+        case 'split-pay':
+            const splitIdPay = args[0]
+            const playersPaid = args.filter(cmd => cmd != splitIdPay)
+            if(!splitIdPay){
+                message.channel.send("Please specify the Split ID, i.e. `!split-pay 0123`")
+                return
+            }
+            if(playersPaid.length == 0){
+                message.channel.send("Please specify the players you want to pay, i.e. `!split-pay 0123 Player1 Player2 etc...`")
+                return
+            }
+            LootSplit.findOne({splitId: splitIdPay})
+            .then(lootsplit => {
+                if(!lootsplit){
+                    message.channel.send("Sorry, a Loot Split with ID `" + splitIdPay + "` was not found. Please check your ID and try again.")
+                    return
+                }
+                if(nickname.toLocaleLowerCase() != lootsplit.bid.player.toLocaleLowerCase()){
+                    message.channel.send("You cannot pay out if you did not win this split.")
+                    return
+                }
+                const today = new Date()
+                const splitDatePart = lootsplit.ends.date.split("/")
+                const splitDate = new Date(splitDatePart[2] + "-" + splitDatePart[1] + "-" + splitDatePart[0] + "T20:00:00.000Z")
+                if(today < splitDate){
+                    message.channel.send("You cannot pay out when the split is still active (ends on " + lootsplit.ends.date + " - " + lootsplit.ends.time +".")
+                    return
+                }
+                if(lootsplit.group.filter(g => playersPaid.includes(g)).length == 0){
+                    message.channel.send("You cannot pay " + playersPaid.join(", ") + " because they (one or more players) are not in the split group list.")
+                    return
+                }
+                const updatedPlayers = lootsplit.group.filter(g => !playersPaid.includes(g))
+                LootSplit.findOneAndUpdate(
+                    {
+                        splitId: splitIdPay
+                    },
+                    {
+                        group: updatedPlayers
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(res => {
+                    message.channel.send(nickname + " paid " + playersPaid.join(", ") + " for Loot Split " + res.splitId)
+                })
+                .catch(err => {
+                    message.channel.send("Sorry, something went wrong.")
+                    console.log(err)
+                })
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
+                console.log(err)
+            })
+            break;
+        case 'split-owing':
+            LootSplit.find()
+            .then(lootsplit => {
+                let updatedLootSplit = lootsplit.filter(ls => {
+                    const today = new Date()
+                    const splitDatePart = ls.ends.date.split("/")
+                    const splitDate = new Date(splitDatePart[2] + "-" + splitDatePart[1] + "-" + splitDatePart[0] + "T20:00:00.000Z")
+                    return (ls.bid.player == nickname ? ls : []) && (today > splitDate)
+                })
+                if(updatedLootSplit.length == 0){
+                    message.channel.send(nickname + " has no debt to pay.")
+                    return
+                }
+                let playersOwed = ""
+                updatedLootSplit.map(ls => playersOwed += nickname + ", you owe `" + ls.group.join(" & ") + "` $" + ls.owe.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " each for Loot Split " + ls.splitId + "\n")
+                message.channel.send(playersOwed)
             })
             .catch(err => {
                 message.channel.send("Sorry, something went wrong.")
