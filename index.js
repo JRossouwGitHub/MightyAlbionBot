@@ -369,7 +369,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split':
-            const splitTab = args[0]
+            const splitTab = args[0].toString()
             const splitAmount = args[1]
             if(!splitTab || !splitAmount){
                 message.channel.send("Please specify the Split Tab and Amount, i.e. `!split 1/2/3 2000000`")
@@ -377,13 +377,17 @@ client.on('messageCreate', (message) => {
             }
             const d = new Date()
             d.setDate(d.getDate() + 1)
-            const splitEnd =  (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + "/" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "/" + d.getFullYear() + " 08:00pm NZST"
+            const splitEndDate = (d.getDate() < 10 ? "0" + d.getDate() : d.getDate()) + "/" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "/" + d.getFullYear() 
+            const splitEndTime = "08:00pm NZST"
             d.setDate(d.getDate() - 1)
             const newLootSplit = {
                 splitId: Math.random().toString().slice(2).substring(0,4),
                 tab: splitTab,
                 amount: splitAmount,
-                ends: splitEnd,
+                ends: {
+                    date: splitEndDate,
+                    time: splitEndTime
+                },
                 date: d.getFullYear() + "-" + (d.getMonth() + 1 < 10 ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "-" + (d.getDate() < 10 ? "0" + d.getDate() : d.getDate())
             }
             LootSplit.create(newLootSplit)
@@ -394,11 +398,12 @@ client.on('messageCreate', (message) => {
                     null,
                     'Here are the details of the split:',
                     [
+                        {name: 'Split ID', value: lootsplit.splitId.toString()},
                         {name: 'Split Tab', value: lootsplit.tab.toString()}, 
                         {name: 'Split Amount', value: "$" + lootsplit.amount.toString()}, 
-                        {name: 'Players', value: lootsplit.group.length > 0 ? lootsplit.group.join("\n") : "N/A"}, 
+                        {name: 'Players Owed', value: lootsplit.group.length > 0 ? lootsplit.group.join("\n") : "N/A"}, 
                         {name: 'Bid', value: (lootsplit.bid.player == "" ? "N/A" : lootsplit.bid.player) + ' - $' + lootsplit.bid.amount.toString()},
-                        {name: 'Ends', value: lootsplit.ends.toString()},
+                        {name: 'Ends', value: lootsplit.ends.date.toString() + " - " + lootsplit.ends.time.toString()},
                         {name: '\u200B', value: '\u200B'}
                     ],
                     null
@@ -406,6 +411,126 @@ client.on('messageCreate', (message) => {
             })
             .catch(err => {
                 console.log("DB - LootSplit was not inserted or updated")
+                console.log(err)
+            })
+            break;
+        case 'check-split':
+            const splitId = args[0].toString()
+            if(!splitId){
+                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                return
+            }
+            LootSplit.findOne({splitId: splitId})
+            .then(lootsplit => {
+                if(!lootsplit){
+                    message.channel.send("Sorry, a Loot Split with ID `" + splitId + "` was not found. Please check your ID and try again.")
+                    return
+                }
+                message.channel.send(messageEmbed(
+                    'Checking Loot Split: ' + lootsplit.splitId,
+                    null,
+                    'Here are the details of the split:',
+                    [
+                        {name: 'Split ID', value: lootsplit.splitId.toString()},
+                        {name: 'Split Tab', value: lootsplit.tab.toString()}, 
+                        {name: 'Split Amount', value: "$" + lootsplit.amount.toString()}, 
+                        {name: 'Players Owed', value: lootsplit.group.length > 0 ? lootsplit.group.join("\n") : "N/A"}, 
+                        {name: 'Bid', value: (lootsplit.bid.player == "" ? "N/A" : lootsplit.bid.player) + ' - $' + lootsplit.bid.amount.toString()},
+                        {name: 'Ends', value: lootsplit.ends.date.toString() + " - " + lootsplit.ends.time.toString()},
+                        {name: '\u200B', value: '\u200B'}
+                    ],
+                    null
+                ))
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
+                console.log(err)
+            })
+            break;
+        case 'split-add':
+            const splitIdAdd = args[0].toString()
+            const playersToAdd = args.filter(cmd => cmd != splitIdAdd)
+            if(!splitIdAdd){
+                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                return
+            }
+            if(playersToAdd.length < 1) {
+                message.channel.send("Please specify the players to add, i.e. `!split 0123 Player1 Player2 etc...`")
+                return
+            }
+            LootSplit.findOne({splitId: splitIdAdd})
+            .then(lootsplit => {
+                if(!lootsplit){
+                    message.channel.send("Sorry, a Loot Split with ID `" + splitIdAdd + "` was not found. Please check your ID and try again.")
+                    return
+                }
+                playersToAdd.concat(lootsplit.group)
+                const uniquePlayersToAdd = [... new Set(playersToAdd)]
+                LootSplit.findOneAndUpdate(
+                    {
+                        splitId: splitIdAdd
+                    },
+                    {
+                        group: uniquePlayersToAdd
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(res => {
+                    message.channel.send("Succesfully added " + res.group.join(", ") + " to Loot Split " + res.splitId)
+                })
+                .catch(err => {
+                    message.channel.send("Sorry, something went wrong.")
+                    console.log(err)
+                })
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
+                console.log(err)
+            })
+            break;
+        case 'split-remove':
+            const splitIdRemove = args[0].toString()
+            const playersToRemove = args.filter(cmd => cmd != splitIdRemove)
+            if(!splitIdRemove){
+                message.channel.send("Please specify the Split ID, i.e. `!split 0123`")
+                return
+            }
+            if(playersToRemove.length < 1) {
+                message.channel.send("Please specify the players to remove, i.e. `!split 0123 Player1 Player2 etc...`")
+                return
+            }
+            LootSplit.findOne({splitId: splitIdRemove})
+            .then(lootsplit => {
+                if(!lootsplit){
+                    message.channel.send("Sorry, a Loot Split with ID `" + splitIdRemove + "` was not found. Please check your ID and try again.")
+                    return
+                }
+                const updatedPlayers = lootsplit.group.filter(g => !playersToRemove.includes(g))
+                LootSplit.findOneAndUpdate(
+                    {
+                        splitId: splitIdRemove
+                    },
+                    {
+                        group: updatedPlayers
+                    },
+                    {
+                        new: true,
+                        upsert: true
+                    }
+                )
+                .then(res => {
+                    message.channel.send("Succesfully removed " + playersToRemove.join(", ") + " from Loot Split " + res.splitId)
+                })
+                .catch(err => {
+                    message.channel.send("Sorry, something went wrong.")
+                    console.log(err)
+                })
+            })
+            .catch(err => {
+                message.channel.send("Sorry, something went wrong.")
                 console.log(err)
             })
             break;

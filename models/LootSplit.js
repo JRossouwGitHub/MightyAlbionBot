@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 const LootSplitSchema = new Schema({
     splitId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true,
         dropDups: true
@@ -28,7 +28,11 @@ const LootSplitSchema = new Schema({
         }
     },
     ends: {
-        type: String,
+        type: Object,
+        default: {
+            date: "",
+            time: ""
+        },
         required: true
     },
     date: {
