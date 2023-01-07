@@ -1,4 +1,5 @@
 const messageEmbed = require('../utilities/messageEmbed.js').messageEmbed
+const builds = require('../utilities/builds').builds
 
 class ContentQueue{
     constructor(type = 1, size = 0, inQueue = [], joinable = true){
@@ -17,6 +18,12 @@ class ContentQueue{
                 this.size = 10
                 this.invite(reaction, player, 'Fame Farming', this.id)
                 break;
+            case '2️⃣':
+                reaction.message.channel.send('@here ' + player + ' started a Roads party!')
+                this.type = 2
+                this.size = 7
+                this.invite(reaction, player, 'Roads', this.id)
+                break;
         } 
         return this
     }
@@ -28,12 +35,27 @@ class ContentQueue{
                     this.id + ' - ' + player + ' started a ' + content + ' party!',
                     null,
                     'To join the party, select (react) to one of the roles below:',
-                    [{name: '🛡️ - TANK', value: 'Mace, Oathekeepers\u200B'}, {name: '⚔️ - DPS', value: 'Carving Sword, Greataxe, Permafrost, Reg Bow\u200B'}, {name: '⚕️ - HEALER', value: 'Holy, Nature\u200B'}, {name: '\u200B', value: '\u200B'}],
+                    [{name: '🛡️ - TANK', value: builds.standard.tank + '\u200B'}, {name: '⚔️ - DPS', value: builds.standard.dps + '\u200B'}, {name: '⚕️ - HEALER', value: builds.standard.healer + '\u200B'}, {name: '✳️ - SUPPORT', value: builds.standard.support + '\u200B'}, {name: '\u200B', value: '\u200B'}],
                     null
                 )).then((msg) => {
                     msg.react('🛡️')
                     msg.react('⚔️')
                     msg.react('⚕️')
+                    msg.react('✳️')
+                })
+                break;
+            case 'Roads':
+                reaction.message.channel.send(messageEmbed(
+                    this.id + ' - ' + player + ' started a ' + content + ' party!',
+                    null,
+                    'To join the party, select (react) to one of the roles below:',
+                    [{name: '🛡️ - TANK', value: builds.standard.tank + '\u200B'}, {name: '⚔️ - DPS', value: builds.standard.dps + '\u200B'}, {name: '⚕️ - HEALER', value: builds.standard.healer + '\u200B'}, {name: '✳️ - SUPPORT', value: builds.standard.support + '\u200B'}, {name: '\u200B', value: '\u200B'}],
+                    null
+                )).then((msg) => {
+                    msg.react('🛡️')
+                    msg.react('⚔️')
+                    msg.react('⚕️')
+                    msg.react('✳️')
                 })
                 break;
         }
@@ -63,6 +85,36 @@ class ContentQueue{
                     return
                 }
                 if(aRole == '⚕️' && this.inQueue.filter(aPlayer => aPlayer[1] == '⚕️') >= 2){
+                    reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
+                    return
+                }
+                if(aRole == '✳️' && this.inQueue.filter(aPlayer => aPlayer[1] == '✳️') >= 1){
+                    reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
+                    return
+                }
+                this.inQueue.push([player, aRole])
+                reaction.message.channel.send(player + ' joined as ' + aRole)
+                if(this.inQueue.length == this.size){
+                    this.joinable = false
+                    return this.ready(reaction, content)
+                } else {
+                    return content
+                }
+                break;
+            case 2:
+                if(this.inQueue.length == this.size){
+                    reaction.message.channel.send('Sorry, this party is already full.')
+                    return
+                }
+                if(aRole == '🛡️' && this.inQueue.filter(aPlayer => aPlayer[1] == '🛡️') >= 1){
+                    reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
+                    return
+                }
+                if(aRole == '⚔️' && this.inQueue.filter(aPlayer => aPlayer[1] == '⚔️') >= 4){
+                    reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
+                    return
+                }
+                if(aRole == '⚕️' && this.inQueue.filter(aPlayer => aPlayer[1] == '⚕️') >= 1){
                     reaction.message.channel.send('Sorry, there are already enough ' + aRole + '. Try a different role.')
                     return
                 }
