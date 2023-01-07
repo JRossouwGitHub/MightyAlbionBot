@@ -433,9 +433,9 @@ client.on('messageCreate', (message) => {
                     [
                         {name: 'Split ID', value: lootsplit.splitId.toString()},
                         {name: 'Split Tab', value: lootsplit.tab.toString()}, 
-                        {name: 'Split Amount', value: "$" + lootsplit.amount.toString()}, 
+                        {name: 'Split Amount', value: "$" + lootsplit.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}, 
                         {name: 'Players Owed', value: lootsplit.group.length > 0 ? lootsplit.group.join("\n") : "N/A"}, 
-                        {name: 'Bid', value: (lootsplit.bid.player == "" ? "N/A" : lootsplit.bid.player) + ' - $' + lootsplit.bid.amount.toString()},
+                        {name: 'Bid', value: (lootsplit.bid.player == "" ? "N/A" : lootsplit.bid.player) + ' - $' + lootsplit.bid.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")},
                         {name: 'Ends', value: lootsplit.ends.date.toString() + " - " + lootsplit.ends.time.toString()},
                         {name: '\u200B', value: '\u200B'}
                     ],
@@ -605,7 +605,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split-pay':
-            const splitIdPay = args[0]
+            const splitIdPay = args[0].toString()
             const playersPaid = args.filter(cmd => cmd != splitIdPay)
             if(!splitIdPay){
                 message.channel.send("Please specify the Split ID, i.e. `!split-pay 0123`")
@@ -621,7 +621,9 @@ client.on('messageCreate', (message) => {
                     message.channel.send("Sorry, a Loot Split with ID `" + splitIdPay + "` was not found. Please check your ID and try again.")
                     return
                 }
-                if(nickname.toLocaleLowerCase() != lootsplit.bid.player.toLocaleLowerCase()){
+                if(nickname.toLowerCase() != lootsplit.bid.player.toLowerCase()){
+                    console.log(nickname)
+                    console.log(lootsplit.bid.player)
                     message.channel.send("You cannot pay out if you did not win this split.")
                     return
                 }
@@ -669,7 +671,9 @@ client.on('messageCreate', (message) => {
                     const today = new Date()
                     const splitDatePart = ls.ends.date.split("/")
                     const splitDate = new Date(splitDatePart[2] + "-" + splitDatePart[1] + "-" + splitDatePart[0] + "T20:00:00.000Z")
-                    return (ls.bid.player == nickname ? ls : []) && (today > splitDate)
+                    if(ls.bid.player.toLowerCase() == nickname.toLowerCase() && today > splitDate){
+                        return ls
+                    }
                 })
                 if(updatedLootSplit.length == 0){
                     message.channel.send(nickname + " has no debt to pay.")
