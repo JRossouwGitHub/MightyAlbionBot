@@ -675,7 +675,7 @@ client.on('messageCreate', (message) => {
                         return ls
                     }
                 })
-                if(updatedLootSplit.length == 0){
+                if(updatedLootSplit.length == 0 || updatedLootSplit == '' || updatedLootSplit == undefined || updatedLootSplit == null){
                     message.channel.send(nickname + " has no debt to pay.")
                     return
                 }
