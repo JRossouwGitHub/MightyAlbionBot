@@ -369,7 +369,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split':
-            const splitTab = args[0].toString()
+            const splitTab = args[0]
             const splitAmount = args[1]
             if(!splitTab || !splitAmount){
                 message.channel.send("Please specify the Split Tab and Amount, i.e. `!split 1/2/3 2000000`")
@@ -415,7 +415,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'check-split':
-            const splitId = args[0].toString()
+            const splitId = args[0]
             if(!splitId){
                 message.channel.send("Please specify the Split ID, i.e. `!check-split 0123`")
                 return
@@ -448,7 +448,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split-add':
-            const splitIdAdd = args[0].toString()
+            const splitIdAdd = args[0]
             const playersToAdd = args.filter(cmd => cmd != splitIdAdd)
             if(!splitIdAdd){
                 message.channel.send("Please specify the Split ID, i.e. `!split-add 0123`")
@@ -492,7 +492,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split-remove':
-            const splitIdRemove = args[0].toString()
+            const splitIdRemove = args[0]
             const playersToRemove = args.filter(cmd => cmd != splitIdRemove)
             if(!splitIdRemove){
                 message.channel.send("Please specify the Split ID, i.e. `!split-remove 0123`")
@@ -605,7 +605,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'split-pay':
-            const splitIdPay = args[0].toString()
+            const splitIdPay = args[0]
             const playersPaid = args.filter(cmd => cmd != splitIdPay)
             if(!splitIdPay){
                 message.channel.send("Please specify the Split ID, i.e. `!split-pay 0123`")
