@@ -147,7 +147,7 @@ client.on('messageCreate', (message) => {
             const supportsTitle = '✳️ - SUPPORTS (' + qSupports.length + ')'
             const supportsValue = qSupports.length > 0 ? qSupports.join(', ') : 'None'
             message.channel.send(messageEmbed(
-                'Players in group (' + aQueue.inQueue.length + '/' + aQueue.size + ')',
+                contentId + ' - Players in group (' + aQueue.inQueue.length + '/' + aQueue.size + ')',
                 null,
                 'See the roles below:',
                 [
