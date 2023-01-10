@@ -45,7 +45,7 @@ client.on('messageCreate', (message) => {
     const nickname = message.guild.members.cache.map(member => { if(member.user.username == message.author.username) return member.nickname == null ? message.author.username : member.nickname}).toString().replace(/,/g, "")
     switch(command){
         case "ping":
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            if(!validate(message, null, ['odiousgspaz-test'], 'Dev', null)) return
             message.channel.send("pong!")
             break;
         case "hello":
@@ -59,7 +59,7 @@ client.on('messageCreate', (message) => {
             message.channel.send("Here is a list of helpful commands:\n" + output)
             break;
         case 'embed':
-            if(!validate(message, null, 'odiousgspaz-test', 'Dev', null)) return
+            if(!validate(message, null, ['odiousgspaz-test'], 'Dev', null)) return
             message.channel.send(messageEmbed(
                 'This is a test card',
                 null,
@@ -79,7 +79,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'start':
-            if(!validate(message, null, "party-setup", null, null)) return
+            if(!validate(message, null, ["party-setup"], null, null)) return
             if(args == 0){
                 message.channel.send(messageEmbed(
                     'Content Party',
@@ -189,7 +189,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'register':
-            if(!validate(message, "The Mob Cartel", 'register', null, null)) return
+            if(!validate(message, ["The Mob Cartel"], ['register'], null, null)) return
             const member = nickname
             const total_owing = cartelFee
             const total_paid = 0
@@ -227,7 +227,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'pay':
-            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            if(!validate(message, ["The Mob Cartel"], ['fees'], null, null)) return
             CartelMember.findOne({member: nickname})
             .then((aMember) => {
                 const weeksDiff = getWeeksDiff(aMember)
@@ -262,7 +262,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'owing':
-            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            if(!validate(message, ["The Mob Cartel"], ['fees'], null, null)) return
             CartelMember.findOne({member: nickname})
             .then((aMember) => {
                 const weeksDiff = getWeeksDiff(aMember)
@@ -297,7 +297,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'members':
-            if(!validate(message, "The Mob Cartel", 'fees', null, null)) return
+            if(!validate(message, ["The Mob Cartel"], ['fees'], null, null)) return
             CartelMember.find({})
             .then((members) => {
                 const membersList = []
