@@ -79,7 +79,7 @@ client.on('messageCreate', (message) => {
             })
             break;
         case 'start':
-            if(!validate(message, null, null, null, null)) return
+            if(!validate(message, null, "party-setup", null, null)) return
             if(args == 0){
                 message.channel.send(messageEmbed(
                     'Content Party',
